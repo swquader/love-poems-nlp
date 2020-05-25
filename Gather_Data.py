@@ -29,7 +29,7 @@ authors = []
 years = []
 poems = []
     
-for page in range(1,23): #(1,27)
+for page in range(1,23):
 
     # get authors
     page_authors = driver.find_elements_by_css_selector("td[data-label='Author']")
@@ -72,11 +72,12 @@ for page in range(1,23): #(1,27)
     sleep(10)
     
 
-# years and authors lists don't include first 20 poems, didn't get first page    
+
 # store data in mongodb
 db = MongoClient().poetry
 collection = db.love_poems
 
+# years and authors lists didn't get first page (don't include first 20 poems)
 for title, poem, year, author in list(zip(titles[20:], poems[20:], years, authors)):
     document = {'title': title, 'poem': poem, 'year': year, 'author': author}
     collection.insert_one(document)
