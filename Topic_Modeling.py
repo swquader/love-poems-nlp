@@ -50,10 +50,8 @@ def LDA_topics(corpus, num_topics, stop_words_list = 'english', TFIDF = None):
     
     return LDA_model.print_topics()
 
-LDA_topics(cleaned_corpus, 2)
-LDA_topics(cleaned_corpus, 3)
-LDA_topics(cleaned_corpus, 4)
-LDA_topics(cleaned_corpus, 5)
+for num in range(2,6):
+    LDA_topics(cleaned_corpus, num)
 
 # remove words 'love' and 'like'
 sw = stopwords.words('english') + ['love','Love','like','Like']
@@ -82,9 +80,8 @@ for poem in df['POS']:
             poem_nouns.append(word[0]+' ')
     nouns_corpus.append(''.join(poem_nouns))
 
-LDA_topics(nouns_corpus, 2, sw)
-LDA_topics(nouns_corpus, 3, sw)
-LDA_topics(nouns_corpus, 4, sw)
+for num in range(2,5):
+    LDA_topics(nouns_corpus, num, sw)
 
 #try TF-IDF
 LDA_topics(nouns_corpus, 2, sw, 1)
@@ -101,10 +98,8 @@ for poem in df['POS']:
             poem_verbs.append(word[0]+' ')
     verbs_corpus.append(''.join(poem_verbs))
 
-LDA_topics(verbs_corpus, 2, sw, 1)
-LDA_topics(verbs_corpus, 3, sw, 1)
-LDA_topics(verbs_corpus, 4, sw, 1)
-
+for num in range(2,5):
+    LDA_topics(verbs_corpus, 2, sw, 1)
 
 LDA_topics(cleaned_corpus, 2, sw, 1)
 
@@ -112,9 +107,8 @@ LDA_topics(cleaned_corpus, 2, sw, 1)
 # new stop words
 sw2 = sw + ['know','shall','heart','eyes','loves','light']
 
-LDA_topics(cleaned_corpus, 2, sw2, 1)
-LDA_topics(cleaned_corpus, 3, sw2, 1)
-LDA_topics(cleaned_corpus, 4, sw2, 1)
+for num in range(2,5):
+    LDA_topics(cleaned_corpus, num, sw2, 1)
 
 LDA_topics(nouns_corpus, 2, sw2, 1)
 LDA_topics(nouns_corpus, 3, sw2+['thee'], 1)
@@ -169,20 +163,17 @@ def NMF_topics(corpus, num_topics, stop_words_list='english', TFIDF=None):
             word_list.append(word)
         print(word_list)
     
-NMF_topics(verbs_corpus, 2, sw2, 1)
-NMF_topics(verbs_corpus, 3, sw2, 1)
-NMF_topics(verbs_corpus, 4, sw2, 1)
-NMF_topics(verbs_corpus, 6, sw2, 1)
+for num in range(2,7):
+    NMF_topics(verbs_corpus, num, sw2, 1)
 
 sw3 = sw2 + ['thou','thee','thy','yo']
 NMF_topics(verbs_corpus, 10, sw3, 1)
 NMF_topics(verbs_corpus, 5, sw3, 1)
 NMF_topics(verbs_corpus, 3, sw3, 1)
 
-NMF_topics(nouns_corpus, 2, sw3, 1)
-NMF_topics(nouns_corpus, 3, sw3, 1) # better model
-NMF_topics(nouns_corpus, 4, sw3, 1) # better model # best model
-NMF_topics(nouns_corpus, 5, sw3, 1)
+for num in range(2,6):
+    NMF_topics(nouns_corpus, num, sw3, 1)
+# best model: 4 topics
 
 for poem in df.poem_clean:
     if 'derness' in poem:
@@ -212,17 +203,5 @@ for topic in ['topic_1', 'topic_2', 'topic_3', 'topic_4']:
 df.groupby('period').mean()[['topic_1', 'topic_2', 'topic_3', 'topic_4']]
 
 
-# save findings from topic modeling (pickle dataframes)
+# save findings from topic modeling
 df.to_pickle('/Users/wasilaq/Metis/love-poems-nlp/pickled/poems_w_topics_df')
-
-
-t1 = ['night', 'life', 'world', 'sea', 'body', 'soul', 'wind', 'god', 'face', 'hand']
-t2 = ['way', 'day', 'kiss', 'home', 'breath', 'derness', 'face', 'morning', 'hope', 'front']
-t3 = ['moon', 'morning', 'sun', 'song', 'night', 'noon', 'side', 'beautiful', 'faint', 'watch']
-t4 = ['man', 'time', 'mother', 'poem', 'room', 'door', 'someone', 'father', 'everything', 'body']
-
-final_topics = {'topic_1':t1, 'topic_2':t2, 'topic_3':t3, 'topic_4':t4}
-
-topics_df = pd.DataFrame(final_topics)
-
-topics_df.to_pickle('/Users/wasilaq/Metis/love-poems-nlp/pickled/topics_df')
