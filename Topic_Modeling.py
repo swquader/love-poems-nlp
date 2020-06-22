@@ -12,64 +12,39 @@ from sklearn.decomposition import NMF
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.corpus import stopwords
 from gensim import models, matutils
+from topic_modeling_class import DTM
 
 df = pd.read_pickle('/Users/wasilaq/Metis/love-poems-nlp/pickled/poems_df')
 cleaned_corpus = df['poem_clean']
 
+def repeat(model, start, stop, corpus, form='BOW', sw='english'):
+    docs = DTM(df['title'], corpus, form, sw)
+    for num in range(start, stop):
+        if model == 'LDA':
+            print(docs.LDA_topics(num))
+        if model == 'NMF':
+            print(docs.NMF_topics(num))
+        print()
+
 # LDA
-def LDA_topics(corpus, num_topics, stop_words_list = 'english', TFIDF = None):
-    '''
-    Return the topics of an LDA model, given the documents, the desired number of topics, stop words, and the type of document-term matrix
-    
-    Parameters
-    ----------
-    corpus : iterable (e.g. series, list)
-        Contains all documents
-    num_topics : int
-        Number of topics
-    stop_words_list : list
-        List of all stop words
-    TFIDF
-        Assigned no value for bag of words document-term matrix (specifically, function will use CountVectorizer). Assign value for TF-IDF document-term matrix (function will use TfidfVectorizer)
-
-    Returns
-    -------
-    Topics from LDA model
-
-    '''
-    if TFIDF == None:
-        LDA_cv = CountVectorizer(stop_words=stop_words_list)
-    else:
-        LDA_cv = TfidfVectorizer(stop_words=stop_words_list)
-        
-    LDA_cv_dtm = LDA_cv.fit_transform(corpus)
-    gensim_corpus = matutils.Sparse2Corpus(LDA_cv_dtm.transpose())
-    id2word = dict((v,k) for k,v in LDA_cv.vocabulary_.items())
-
-    LDA_model = models.LdaModel(corpus=gensim_corpus, num_topics=num_topics, id2word=id2word, passes=5)
-    
-    return LDA_model.print_topics()
-
-for num in range(2,6):
-    LDA_topics(cleaned_corpus, num)
+repeat(2, 6, cleaned_corpus)
 
 # remove words 'love' and 'like'
 sw = stopwords.words('english') + ['love','Love','like','Like']
-LDA_topics(cleaned_corpus, 2, sw)
-LDA_topics(cleaned_corpus, 3, sw)
+repeat('LDA', 2, 4, cleaned_corpus, sw=sw)
 
-# stem, then do topic modeling?
+
+# stem
 stemmed_corpus = []
 for poem in cleaned_corpus:
     stemmed_poem = []
     for word in poem:
         stemmed_poem.append(LancasterStemmer().stem(word))
     stemmed_corpus.append(''.join(stemmed_poem))
-    
-LDA_topics(stemmed_corpus, 2, sw)
-LDA_topics(stemmed_corpus, 3, sw)
-LDA_topics(stemmed_corpus, 3, (sw+['one','know','would']))
-LDA_topics(stemmed_corpus, 4, (sw+['one','know','would']))
+
+repeat('LDA', 2, 4, stemmed_corpus, sw=sw)    
+repeat('LDA', 3, 5, stemmed_corpus, sw=(sw+['one','know','would']))
+
 
 # nouns only
 nouns_corpus = []
@@ -80,14 +55,12 @@ for poem in df['POS']:
             poem_nouns.append(word[0]+' ')
     nouns_corpus.append(''.join(poem_nouns))
 
-for num in range(2,5):
-    LDA_topics(nouns_corpus, num, sw)
+repeat('LDA', 2, 5, nouns_corpus, sw=sw)
+
 
 #try TF-IDF
-LDA_topics(nouns_corpus, 2, sw, 1)
-LDA_topics(nouns_corpus, 3, sw, 1)
-LDA_topics(nouns_corpus, 4, sw, 1)
-LDA_topics(nouns_corpus, 8, sw, 1)
+repeat('LDA', 2, 9, nouns_corpus, sw=sw, form='TFIDF')
+
 
 # verbs only
 verbs_corpus = []
@@ -98,28 +71,19 @@ for poem in df['POS']:
             poem_verbs.append(word[0]+' ')
     verbs_corpus.append(''.join(poem_verbs))
 
-for num in range(2,5):
-    LDA_topics(verbs_corpus, 2, sw, 1)
-
-LDA_topics(cleaned_corpus, 2, sw, 1)
+repeat('LDA', 2, 5, verbs_corpus, sw=sw, form='TFIDF')
 
 
 # new stop words
 sw2 = sw + ['know','shall','heart','eyes','loves','light']
 
-for num in range(2,5):
-    LDA_topics(cleaned_corpus, num, sw2, 1)
-
-LDA_topics(nouns_corpus, 2, sw2, 1)
-LDA_topics(nouns_corpus, 3, sw2+['thee'], 1)
-LDA_topics(nouns_corpus, 5, sw2+['thee'], 1)
-
-LDA_topics(verbs_corpus, 2, sw2+['let'], 1)
-LDA_topics(verbs_corpus, 3, sw2, 1)
+repeat('LDA', 2, 5, cleaned_corpus, sw=sw2, form='TFIDF')
+repeat('LDA', 2, 6, nouns_corpus, sw=sw2, form='TFIDF')
+repeat('LDA', 2, 4, verbs_corpus, sw=sw2, form='TFIDF')
 
 
 #NMF
-def NMF_topics(corpus, num_topics, stop_words_list='english', TFIDF=None):
+repeat('NMF', 2, 7, verbs_corpus, sw=sw2, form='TFIDF')
     '''
     Return the top words for each topic in an NMF model
     
@@ -161,18 +125,13 @@ def NMF_topics(corpus, num_topics, stop_words_list='english', TFIDF=None):
         for i in topic.argsort()[::-1][:10]:
             word = NMF_cv.get_feature_names()[i]
             word_list.append(word)
-        print(word_list)
-    
-for num in range(2,7):
-    NMF_topics(verbs_corpus, num, sw2, 1)
+        print(word_list)    
 
+# new stop words
 sw3 = sw2 + ['thou','thee','thy','yo']
-NMF_topics(verbs_corpus, 10, sw3, 1)
-NMF_topics(verbs_corpus, 5, sw3, 1)
-NMF_topics(verbs_corpus, 3, sw3, 1)
+repeat('NMF', 3, 11, verbs_corpus, sw=sw3, form='TFIDF')
 
-for num in range(2,6):
-    NMF_topics(nouns_corpus, num, sw3, 1)
+repeat(2, 6, nouns_corpus, sw=sw3, form='TFIDF')
 # best model: 4 topics
 
 for poem in df.poem_clean:
@@ -197,6 +156,8 @@ Topic 4 - concrete, specific
 '''
 
 # add topics to dataframe of poems
+doc_topic = DTM(df['title'], nouns_corpus, stopwords=sw3, form='TFIDF').NMF_df(4)
+
 for topic in ['topic_1', 'topic_2', 'topic_3', 'topic_4']:
     df[topic] = doc_topic[topic].values
 
