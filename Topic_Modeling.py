@@ -7,11 +7,8 @@ Created on Wed May 20 18:27:13 2020
 """
 
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.decomposition import NMF
 from nltk.stem.lancaster import LancasterStemmer
 from nltk.corpus import stopwords
-from gensim import models, matutils
 from topic_modeling_class import DTM
 
 df = pd.read_pickle('/Users/wasilaq/Metis/love-poems-nlp/pickled/poems_df')
@@ -84,48 +81,6 @@ repeat('LDA', 2, 4, verbs_corpus, sw=sw2, form='TFIDF')
 
 #NMF
 repeat('NMF', 2, 7, verbs_corpus, sw=sw2, form='TFIDF')
-    '''
-    Return the top words for each topic in an NMF model
-    
-    Parameters
-    ----------
-    corpus : iterable (e.g. series, list)
-        Contains all documents
-    num_topics : int
-        Number of topics
-    stop_words_list : list
-        List of all stop words
-    TFIDF
-        Assigned no value for bag of words document-term matrix (specifically, function will use CountVectorizer). Assign value for TF-IDF document-term matrix (function will use TfidfVectorizer)
-
-    Returns
-    -------
-    Topics from NMF model
-
-    '''
-    if TFIDF == None:
-        NMF_cv = CountVectorizer(stop_words=stop_words_list)
-    else:
-        NMF_cv = TfidfVectorizer(stop_words=stop_words_list)
-        
-    NMF_cv_dtm = NMF_cv.fit_transform(corpus)
-    model = NMF(num_topics)
-    fitted_model = model.fit_transform(NMF_cv_dtm)
-    
-    global doc_topic
-    columns = []
-    for num in range(1,num_topics+1):
-        columns.append('topic_' + str(num))
-    doc_topic = pd.DataFrame(fitted_model.round(3), index = df['title'], columns = columns)
-    
-    topic_words = model.components_
-    for ix, topic in enumerate(topic_words):
-        print('Topic {}'.format(ix+1))
-        word_list = []
-        for i in topic.argsort()[::-1][:10]:
-            word = NMF_cv.get_feature_names()[i]
-            word_list.append(word)
-        print(word_list)    
 
 # new stop words
 sw3 = sw2 + ['thou','thee','thy','yo']
